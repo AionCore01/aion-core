@@ -1,0 +1,44 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versión (semver)"
+        required: true
+jobs:
+  release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test --if-present
+      - name: Build
+        run: pnpm run build --if-present
+      - name: Calcular checksums
+        run: |
+          mkdir -p dist
+          find dist -type f -exec sha256sum {} \; > CHECKSUMS.txt
+      - name: Crear tag (sin firma GPG, opcional firmar localmente)
+        run: |
+          git config user.name "aion-release-bot"
+          git config user.email "bot@aion-orden.org"
+          git tag v${{ github.event.inputs.version }}
+          git push origin v${{ github.event.inputs.version }}
+      - name: Crear Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: aion-core v${{ github.event.inputs.version }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            CHECKSUMS.txt
