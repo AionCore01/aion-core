@@ -1,0 +1,6 @@
+# CODEOWNERS
+# Protege directorios críticos
+
+/infra/ @aion-admins
+/spec/ @aion-specs
+/src/core/ @aion-core-devs
