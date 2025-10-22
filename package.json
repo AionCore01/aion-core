@@ -1,8 +1,20 @@
 {
   "name": "aion-core",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.1.0",
   "scripts": {
-    "test": "echo \"OK\""
+    "dev": "tsx src/server.ts",
+    "worker": "tsx src/worker.ts",
+    "gen-keys": "ts-node scripts/gen-keys.ts",
+    "seed": "bash scripts/seed.sh",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3",
+    "libsodium-wrappers": "^0.7.13",
+    "bs58": "^6.0.0",
+    "jest": "^29.7.0"
   }
 }
