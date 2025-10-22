@@ -1,0 +1,87 @@
+name: Test IDP End-to-End
+
+on:
+  push:
+    branches: [main, feat/ouroboros-idp-integration]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-keygen:
+    name: Test Key Generation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Test key generation
+        run: pnpm run gen-keys
+        
+      - name: Verify JSON output
+        run: |
+          OUTPUT=$(pnpm run gen-keys)
+          echo "$OUTPUT" | jq -e '.pk_root' || exit 1
+          echo "$OUTPUT" | jq -e '.dev_sk_root' || exit 1
+          echo "✅ Key generation produces valid JSON"
+
+  test-seed-e2e:
+    name: Test Seed End-to-End
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Start services (db, redis)
+        run: |
+          docker compose up -d db redis
+          sleep 5
+          
+      - name: Start API and Worker
+        run: |
+          docker compose up -d api worker
+          sleep 10
+          
+      - name: Run seed script
+        run: pnpm run seed
+        env:
+          BASE_URL: http://localhost:3000
+          
+      - name: Check logs
+        if: failure()
+        run: |
+          docker compose logs api
+          docker compose logs worker
+          
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v
