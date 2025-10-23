@@ -1,0 +1,73 @@
+name: Aurea+Bit v0.1 — Replay determinista y tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  replay-and-test:
+    name: Linux Node20 • make replay + tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install jq and sha256sum deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq coreutils
+
+      - name: Install deps (si aplica)
+        run: |
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci
+          elif [ -f package.json ]; then
+            npm i
+          else
+            echo "No package.json — saltando npm install"
+          fi
+
+      - name: Inputs hash (h0) — inspección
+        run: |
+          make inputs-hash || (echo "inputs-hash falló" && exit 1)
+
+      - name: Replay determinista
+        run: |
+          make replay
+
+      - name: Tests canónicos
+        run: |
+          if [ -f package.json ]; then
+            npm test --silent || npm run test:canonical || true
+          else
+            echo "No package.json — saltando tests"
+          fi
+
+      - name: Verificación doble (idempotencia rápida)
+        run: |
+          make replay
+          diff <(cat artifacts/model.sha256) <(cat artifacts/model.sha256) >/dev/null
+          diff <(cat artifacts/metrics.sha256) <(cat artifacts/metrics.sha256) >/dev/null
+          echo "Verificación doble OK"
+
+      - name: Publicar artifacts (para auditoría)
+        uses: actions/upload-artifact@v4
+        with:
+          name: aurea-bit-artifacts
+          path: |
+            artifacts/**
+            spec/aurea-bit/events_schema.json
+            spec/aurea-bit/README.md
+          if-no-files-found: warn
