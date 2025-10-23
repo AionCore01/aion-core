@@ -1,4 +1,6 @@
-# aion-core
+# aion-cor
+
+[![Aurea+Bit v0.1 — Replay determinista y tests](https://github.com/AionCore01/aion-core/actions/workflows/replay.yml/badge.svg)](https://github.com/AionCore01/aion-core/actions/workflows/replay.yml)e
 
 Aion Core — Núcleo atómico: especificación canónica, contratos y herramientas para la identidad digital Ur y gobernanza por anillos.
 
