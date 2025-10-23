@@ -6,7 +6,8 @@
  * - comunitaria weight_base=1 → MintAUREA=1
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest
+  import { makeMerkleLeaf } from '../events';';
 
 // TODO: Importar la implementación real cuando esté disponible
 // import { procesarContribucion } from '../index';
@@ -133,3 +134,28 @@ describe('Aurea+Bit v0.1 - Pruebas Canónicas', () => {
     expect(supply_change).toBe(10);
   });
 });
+
+          it('Test 5: Settlement genera merkle_leaf determinista', () => {
+    // Arrange
+    const actor_id = 'did:key:xyz';
+    const outputs = { bit: 10 };
+    const inputsHash = '0x' + 'a'.repeat(64);
+    const policy_version = 'v0.1';
+
+    // Act - generar leaf dos veces
+    const leaf1 = makeMerkleLeaf({ actor_id, outputs, inputsHash, policy_version });
+    const leaf2 = makeMerkleLeaf({ actor_id, outputs, inputsHash, policy_version });
+
+    // Assert - debe ser determinista
+    expect(leaf1).toMatch(/^0x[0-9a-f]{64}$/);
+    expect(leaf1).toBe(leaf2);
+
+    // Assert - diferentes inputs generan diferentes leafs
+    const leaf3 = makeMerkleLeaf({ 
+      actor_id: 'did:key:abc', 
+      outputs, 
+      inputsHash, 
+      policy_version 
+    });
+    expect(leaf3).not.toBe(leaf1);
+  });
