@@ -1,0 +1,112 @@
+{
+  "version": "v0.1",
+  "common": {
+    "required": [
+      "version",
+      "ts",
+      "machine_run_id",
+      "policy_version",
+      "inputsHash",
+      "actor_id",
+      "event_type"
+    ],
+    "fields": {
+      "version": { "type": "string", "enum": ["v0.1"] },
+      "ts": { "type": "string", "format": "date-time" },
+      "machine_run_id": { "type": "string" },
+      "policy_version": { "type": "string" },
+      "inputsHash": { "type": "string" },
+      "actor_id": { "type": "string" },
+      "event_type": { "type": "string" }
+    }
+  },
+
+  "events": {
+    "validation_pass": {
+      "required": ["schema_ok", "signature_ok", "window_ok", "unique_ok"],
+      "fields": {
+        "schema_ok": { "type": "boolean" },
+        "signature_ok": { "type": "boolean" },
+        "window_ok": { "type": "boolean" },
+        "unique_ok": { "type": "boolean" }
+      }
+    },
+
+    "validation_fail": {
+      "required": ["reason", "stage"],
+      "fields": {
+        "reason": { "type": "string", "enum": ["schema", "signature", "window", "duplicate", "other"] },
+        "stage": { "type": "string" },
+        "details": { "type": "string" }
+      }
+    },
+
+    "classified": {
+      "required": ["type", "weight_base", "domains"],
+      "fields": {
+        "type": { "type": "string", "enum": ["core-dev", "comunitaria", "research", "docs", "cuidado", "otro"] },
+        "weight_base": { "type": "number" },
+        "domains": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "transmute_risk": {
+      "required": ["points_before", "points_after", "k_core", "boost_r"],
+      "fields": {
+        "points_before": { "type": "number" },
+        "points_after": { "type": "number" },
+        "k_core": { "type": "number" },
+        "boost_r": { "type": "number" }
+      }
+    },
+
+    "transmute_dignity": {
+      "required": ["points_before", "points_after", "k_comm", "boost_d"],
+      "fields": {
+        "points_before": { "type": "number" },
+        "points_after": { "type": "number" },
+        "k_comm": { "type": "number" },
+        "boost_d": { "type": "number" }
+      }
+    },
+
+    "rate_limit_applied": {
+      "required": ["asset", "limit_per_actor_day", "attempted", "allowed", "window_start", "window_end"],
+      "fields": {
+        "asset": { "type": "string", "enum": ["BIT", "AUREA"] },
+        "limit_per_actor_day": { "type": "number" },
+        "attempted": { "type": "number" },
+        "allowed": { "type": "number" },
+        "window_start": { "type": "string", "format": "date-time" },
+        "window_end": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "mint_bit": {
+      "required": ["amount", "fee", "pool_id"],
+      "fields": {
+        "amount": { "type": "number" },
+        "fee": { "type": "number" },
+        "pool_id": { "type": "string" }
+      }
+    },
+
+    "mint_aurea": {
+      "required": ["amount", "fee", "pool_id"],
+      "fields": {
+        "amount": { "type": "number" },
+        "fee": { "type": "number" },
+        "pool_id": { "type": "string" }
+      }
+    },
+
+    "settlement": {
+      "required": ["merkle_leaf", "merkle_root", "proof"],
+      "fields": {
+        "merkle_leaf": { "type": "string" },
+        "merkle_root": { "type": "string" },
+        "proof": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
